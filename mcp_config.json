@@ -2,9 +2,10 @@
   "mcpServers": {
     "mycorrhiza-tracker": {
       "command": "python",
-      "args": ["-m", "mcp_server.server"],
+      "args": ["apps/prediction_tracker/client/mcp/server.py"],
       "env": {
-        "MYCORRHIZA_DB": "tracker.db"
+        "MYCORRHIZA_DB": "data/tracker.db",
+        "PREDICTION_API_URL": "http://localhost:8000"
       }
     }
   }

@@ -87,7 +87,7 @@ class StudioConfig:
     Master configuration for the Studio application.
 
     Usage:
-        from studio.config import studio_config
+        from apps.studio.config import studio_config
         color = studio_config.node_colors.normal
         rate = studio_config.simulation.consumption_rate_normal
     """

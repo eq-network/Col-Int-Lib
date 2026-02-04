@@ -7,7 +7,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 from typing import Optional
 
-from studio.screens.base import Screen
+from apps.studio.screens.base import Screen
 
 
 class ExportScreen(Screen):

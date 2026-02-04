@@ -12,8 +12,8 @@ import tkinter as tk
 from tkinter import ttk
 
 if TYPE_CHECKING:
-    from studio.screen_manager import ScreenManager
-    from studio.app_state import AppState
+    from apps.studio.screen_manager import ScreenManager
+    from apps.studio.app_state import AppState
 
 
 class Screen(ABC):

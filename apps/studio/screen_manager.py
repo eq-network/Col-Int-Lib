@@ -7,8 +7,8 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Dict, Type, Optional, List
 
-from studio.screens.base import Screen
-from studio.app_state import AppState
+from apps.studio.screens.base import Screen
+from apps.studio.app_state import AppState
 
 
 class ScreenManager:

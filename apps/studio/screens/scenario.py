@@ -7,9 +7,9 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Optional, List
 
-from studio.screens.base import Screen
-from studio.app_state import ScenarioConfig
-from studio.registry import ENVIRONMENT_TYPES, EnvironmentTypeInfo
+from apps.studio.screens.base import Screen
+from apps.studio.app_state import ScenarioConfig
+from apps.studio.registry import ENVIRONMENT_TYPES, EnvironmentTypeInfo
 
 from core.category import sequential
 

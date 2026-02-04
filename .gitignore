@@ -9,3 +9,12 @@ results/
 experiment_outputs/
 simulation_results/
 .pyc
+
+# Runtime data
+data/
+*.db
+experiments/outputs/
+
+# OS files
+.DS_Store
+Thumbs.db

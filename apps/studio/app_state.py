@@ -11,7 +11,7 @@ from core.graph import GraphState
 
 # Avoid circular import - only import for type checking
 if TYPE_CHECKING:
-    from studio.edit_session import EditSession
+    from apps.studio.edit_session import EditSession
 
 # Type alias for transform factory function
 TransformFactory = Callable[[int, float], Callable[[GraphState], GraphState]]

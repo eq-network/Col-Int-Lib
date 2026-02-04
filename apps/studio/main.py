@@ -10,20 +10,20 @@ Usage:
 import sys
 from pathlib import Path
 
-# Add parent directory to path ONLY when running directly (not as module)
-# This allows `python studio/main.py` to work without installation
-_project_root = str(Path(__file__).parent.parent)
+# Add project root to path ONLY when running directly (not as module)
+# This allows `python apps/studio/main.py` to work without installation
+_project_root = str(Path(__file__).parent.parent.parent)
 if __name__ == "__main__" and _project_root not in sys.path:
     sys.path.insert(0, _project_root)
 
-from studio.screen_manager import ScreenManager
-from studio.screens.welcome import WelcomeScreen
-from studio.screens.scenario import ScenarioSelectionScreen
-from studio.screens.configuration import ConfigurationScreen
-from studio.screens.editor import GraphEditorScreen
-from studio.screens.simulation import SimulationScreen
-from studio.screens.export import ExportScreen
-from studio.screens.prediction_dashboard import PredictionDashboardScreen
+from apps.studio.screen_manager import ScreenManager
+from apps.studio.screens.welcome import WelcomeScreen
+from apps.studio.screens.scenario import ScenarioSelectionScreen
+from apps.studio.screens.configuration import ConfigurationScreen
+from apps.studio.screens.editor import GraphEditorScreen
+from apps.studio.screens.simulation import SimulationScreen
+from apps.studio.screens.export import ExportScreen
+from apps.studio.screens.prediction_dashboard import PredictionDashboardScreen
 
 
 def main():

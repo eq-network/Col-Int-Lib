@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Optional
 
-from studio.screens.base import Screen
+from apps.studio.screens.base import Screen
 
 
 class WelcomeScreen(Screen):

@@ -10,10 +10,11 @@ import sys
 from pathlib import Path
 
 # Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+project_root = Path(__file__).parent.parent.parent.parent
+sys.path.insert(0, str(project_root))
 
-from studio.screens.base import Screen
-from tracker.database import TrackerDB
+from apps.studio.screens.base import Screen
+from apps.prediction_tracker.legacy.database import TrackerDB
 
 
 class PredictionDashboardScreen(Screen):

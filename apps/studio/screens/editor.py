@@ -13,11 +13,11 @@ import random
 
 import jax.numpy as jnp
 
-from studio.screens.base import Screen
-from studio.edit_session import EditSession
-from studio.edit_mode import EditMode, Tool
-from studio.toolbar import EditToolbar
-from studio.visualization import (
+from apps.studio.screens.base import Screen
+from apps.studio.edit_session import EditSession
+from apps.studio.edit_mode import EditMode, Tool
+from apps.studio.toolbar import EditToolbar
+from apps.studio.visualization import (
     VizConfig, GraphRenderer, get_node_positions, get_node_colors,
     get_node_shapes, get_node_labels, get_edges, normalize_to_screen,
     screen_to_normalized

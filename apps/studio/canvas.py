@@ -57,7 +57,7 @@ class Canvas:
         Args:
             state: GraphState to visualize
         """
-        from studio.renderer import TkinterRenderer
+        from apps.studio.renderer import TkinterRenderer
 
         self.current_state = state
 
@@ -96,7 +96,7 @@ class Canvas:
         if not self.edit_mode or self.current_state is None:
             return
 
-        from studio.graph_editor import add_node
+        from apps.studio.graph_editor import add_node
 
         # Check if clicked near existing node
         positions = self.viz_config.get_node_positions(self.current_state)
@@ -127,7 +127,7 @@ class Canvas:
         if not self.edit_mode or self.current_state is None:
             return
 
-        from studio.graph_editor import add_edge
+        from apps.studio.graph_editor import add_edge
 
         # Find nodes at start and end positions
         positions = self.viz_config.get_node_positions(self.current_state)

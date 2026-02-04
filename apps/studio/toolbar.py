@@ -10,7 +10,7 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Optional
 
-from studio.edit_mode import EditMode, Tool
+from apps.studio.edit_mode import EditMode, Tool
 
 
 class EditToolbar:

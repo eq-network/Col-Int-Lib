@@ -11,7 +11,7 @@ from core.graph import GraphState
 
 # Import centralized config (lazy import to avoid circular deps)
 def _get_studio_config():
-    from studio.config import studio_config
+    from apps.studio.config import studio_config
     return studio_config
 
 

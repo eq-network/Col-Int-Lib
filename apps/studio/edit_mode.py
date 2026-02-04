@@ -15,8 +15,8 @@ from enum import Enum
 import math
 
 from core.graph import GraphState
-from studio.edit_session import EditSession
-from studio.graph_editor import add_node, remove_node, add_edge, remove_edge
+from apps.studio.edit_session import EditSession
+from apps.studio.graph_editor import add_node, remove_node, add_edge, remove_edge
 
 
 class Tool(Enum):

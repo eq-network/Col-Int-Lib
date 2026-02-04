@@ -7,8 +7,8 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Optional, Dict, Tuple, List, Callable
 
-from studio.screens.base import Screen
-from studio.visualization import (
+from apps.studio.screens.base import Screen
+from apps.studio.visualization import (
     VizConfig, get_node_positions, get_node_colors, get_edges,
     normalize_to_screen
 )
