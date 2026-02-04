@@ -67,6 +67,15 @@ class WelcomeScreen(Screen):
         )
         docs_btn.pack(pady=10)
 
+        # Prediction Tracker button
+        tracker_btn = ttk.Button(
+            button_frame,
+            text="Prediction Tracker",
+            command=lambda: self.navigate_to("predictions"),
+            width=25
+        )
+        tracker_btn.pack(pady=10)
+
         # Version info at bottom
         version = ttk.Label(
             self.frame,

@@ -12,6 +12,11 @@ from functools import partial
 from dataclasses import field
 
 
+class CapacityExceededError(Exception):
+    """Raised when trying to add more nodes than capacity allows."""
+    pass
+
+
 @jax.tree_util.register_pytree_node_class
 @dataclasses.dataclass(frozen=True)
 class GraphState:
@@ -48,11 +53,57 @@ class GraphState:
     
     @property
     def num_nodes(self) -> int:
-        """Get the number of nodes in the graph."""
+        """
+        Get the number of active nodes in the graph.
+
+        In capacity mode, counts only active nodes (node_type >= 0).
+        In dynamic mode, returns total array size.
+        """
+        if self.is_capacity_mode:
+            return int(jnp.sum(self.node_types >= 0))
         if not self.node_attrs:
             return 0
         return next(iter(self.node_attrs.values())).shape[0]
-    
+
+    @property
+    def is_capacity_mode(self) -> bool:
+        """
+        Check if this state is in capacity mode.
+
+        Capacity mode uses fixed-size arrays with inactive slots (node_type=-1).
+        Dynamic mode uses dynamically-sized arrays.
+        """
+        return jnp.any(self.node_types == -1)
+
+    @property
+    def capacity(self) -> Optional[int]:
+        """
+        Get the capacity (max nodes) in capacity mode.
+
+        Returns None if in dynamic mode.
+        """
+        if self.is_capacity_mode:
+            return int(self.node_types.shape[0])
+        return None
+
+    def get_active_indices(self) -> jnp.ndarray:
+        """
+        Get array of indices for active nodes.
+
+        Returns:
+            Array of indices where node_type >= 0
+        """
+        return jnp.where(self.node_types >= 0)[0]
+
+    def get_active_mask(self) -> jnp.ndarray:
+        """
+        Get boolean mask for active nodes.
+
+        Returns:
+            Boolean array: True for active nodes, False for inactive
+        """
+        return self.node_types >= 0
+
     def update_node_attrs(self, attr_name: str, new_values: jnp.ndarray) -> 'GraphState':
         """
         Create a new graph with an updated node attribute.
@@ -165,3 +216,86 @@ class GraphState:
             edge_attrs=edge_attrs,
             global_attrs=global_attrs
         )
+
+
+def create_padded_state(
+    capacity: int,
+    initial_active: int,
+    node_types_init: Optional[jnp.ndarray] = None,
+    node_attrs_init: Optional[Dict[str, jnp.ndarray]] = None,
+    adj_matrices_init: Optional[Dict[str, jnp.ndarray]] = None,
+    edge_attrs: Optional[Dict[str, jnp.ndarray]] = None,
+    global_attrs: Optional[Dict[str, Any]] = None
+) -> GraphState:
+    """
+    Create a GraphState with fixed capacity (padded arrays).
+
+    This enables O(1) add/remove operations via slot activation/deactivation
+    instead of array resizing.
+
+    Args:
+        capacity: Maximum number of nodes (fixed array size)
+        initial_active: Number of initially active nodes
+        node_types_init: Initial node types array (length = initial_active)
+        node_attrs_init: Dict of initial node attribute arrays (length = initial_active)
+        adj_matrices_init: Dict of initial adjacency matrices (shape = initial_active x initial_active)
+        edge_attrs: Dict of initial edge attribute arrays (optional)
+        global_attrs: Dict of global attributes (optional)
+
+    Returns:
+        GraphState with padded arrays (capacity - initial_active inactive slots)
+
+    Raises:
+        ValueError: If initial_active > capacity
+
+    Example:
+        >>> state = create_padded_state(
+        ...     capacity=10,
+        ...     initial_active=3,
+        ...     node_types_init=jnp.array([0, 0, 0]),
+        ...     node_attrs_init={"resources": jnp.array([100.0, 100.0, 100.0])},
+        ...     adj_matrices_init={"network": jnp.eye(3)}
+        ... )
+        >>> state.capacity
+        10
+        >>> state.num_nodes
+        3
+    """
+    if initial_active > capacity:
+        raise ValueError(f"initial_active ({initial_active}) cannot exceed capacity ({capacity})")
+
+    # Create padded node_types array
+    # Active nodes: node_type >= 0
+    # Inactive slots: node_type = -1
+    if node_types_init is None:
+        node_types_init = jnp.zeros(initial_active, dtype=jnp.int32)
+
+    padded_node_types = jnp.concatenate([
+        node_types_init,
+        jnp.full(capacity - initial_active, -1, dtype=jnp.int32)
+    ])
+
+    # Pad node attributes
+    padded_node_attrs = {}
+    if node_attrs_init:
+        for key, arr in node_attrs_init.items():
+            # Pad with zeros
+            padding = jnp.zeros((capacity - initial_active,) + arr.shape[1:], dtype=arr.dtype)
+            padded_node_attrs[key] = jnp.concatenate([arr, padding])
+
+    # Pad adjacency matrices
+    padded_adj_matrices = {}
+    if adj_matrices_init:
+        for key, mat in adj_matrices_init.items():
+            # Pad to capacity x capacity
+            padded_mat = jnp.zeros((capacity, capacity), dtype=mat.dtype)
+            padded_mat = padded_mat.at[:initial_active, :initial_active].set(mat)
+            padded_adj_matrices[key] = padded_mat
+
+    return GraphState(
+        node_types=padded_node_types,
+        node_attrs=padded_node_attrs,
+        adj_matrices=padded_adj_matrices,
+        edge_attrs=edge_attrs or {},
+        global_attrs=global_attrs or {}
+    )

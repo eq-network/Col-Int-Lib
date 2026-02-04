@@ -23,6 +23,7 @@ from studio.screens.configuration import ConfigurationScreen
 from studio.screens.editor import GraphEditorScreen
 from studio.screens.simulation import SimulationScreen
 from studio.screens.export import ExportScreen
+from studio.screens.prediction_dashboard import PredictionDashboardScreen
 
 
 def main():
@@ -49,6 +50,7 @@ def main():
     manager.register_screen("editor", GraphEditorScreen)
     manager.register_screen("simulation", SimulationScreen)
     manager.register_screen("export", ExportScreen)
+    manager.register_screen("predictions", PredictionDashboardScreen)
 
     # Start at welcome screen
     manager.navigate_to("welcome")
