@@ -1,139 +1,314 @@
-# Collective Intelligence Library: Process-Centric Multi-Agent Simulation
+# Mycorrhiza: Prediction Tracking for Claude Code
 
-A functional framework for building multi-agent simulations using graph transformations and category theory.
+A pure functional system for tracking real predictions from Claude Code instances, computing calibration metrics, and enabling learning through feedback.
+
+**Core Principle**: Track reality, don't simulate it.
 
 ## What Is This?
 
-The Collective Intelligence Library treats simulations as **pure transformations on graph states** rather than object-oriented state mutations. This makes complex multi-agent systems easier to reason about, compose, and verify.
+Mycorrhiza is a **prediction tracker** for Claude Code. When Claude makes predictions about tasks ("I'll complete this in 15 minutes, 80% confident"), Mycorrhiza:
 
-**Core Principle**: `GraphState → Transform → GraphState → Transform → ...`
+1. Records the prediction
+2. Tracks the actual outcome
+3. Computes accuracy (Brier score)
+4. Maintains calibration metrics
+5. Displays performance over time
 
-That's it. Everything else is optimization or convenience.
+**Not a simulator.** A tracker for real events.
 
-## Getting Started
+## Quick Start
 
-If you're new to the framework, start with the [Start Here Guide](Start_Here.md) which walks you through building your first simulation in about 30 minutes. For a deeper understanding of the conceptual foundations and design philosophy, read the [Manifesto](Manifesto.md).
+```python
+from core.time import run_n_ticks
+from core.predictions import register_prediction, mark_task_complete
+from core.stats import get_calibration, get_leaderboard
+from engine.environments.code_tracker import create_code_tracker
 
-The democracy code in `environments/democracy/` is just one example application. The core framework lives in `core/`, `engine/`, and `execution/`, and you can use it to build simulations for any domain: epidemics, markets, traffic flow, or anything else involving agents and networks.
+# Initialize tracker
+world = create_code_tracker(agent_names=["claude"])
+
+# Claude makes a prediction
+world = register_prediction(
+    world,
+    agent_id=1,
+    probability=0.8,
+    horizon=10,
+    condition="task_complete"
+)
+
+# Task actually completes (real event)
+world = mark_task_complete(world, agent_id=1)
+
+# Time passes
+world = run_n_ticks(world, 10)
+
+# Check calibration
+calibration = get_calibration(world, agent_id=1)
+print(f"Calibration: {calibration:.4f}")  # 0.04 (good!)
+```
+
+## Architecture
+
+```
+core/
+├── time.py         - Discrete time, events, World = (tick, state, log)
+├── graph.py        - GraphState (immutable graph structure)
+├── predictions.py  - Pure prediction tracking (register, resolve, Brier)
+└── stats.py        - Pure analysis functions (calibration, leaderboard)
+
+engine/environments/
+└── code_tracker.py - MCP adapter for Claude Code
+
+experiments/
+└── synthetic_agents.py - Simulation (for testing only)
+
+tests/
+└── test_tracker_known_outcomes.py - Tests with explicit outcomes
+```
+
+## Philosophy
+
+### Pure Core, Effects at Edges
+
+All core functions are **pure**: `World → World`
+
+- No I/O in core
+- No randomness in core
+- No simulation in core
+- Just: prediction + outcome → Brier score → calibration
+
+Effects (persistence, MCP integration, UI) live at the edges.
+
+### Track Reality, Don't Simulate It
+
+The core tracker does NOT:
+- Simulate agent personalities ❌
+- Generate synthetic outcomes ❌
+- Adjust probabilities ❌
+- Assume behaviors ❌
+
+The core tracker DOES:
+- Record real predictions ✅
+- Log real outcomes ✅
+- Compute exact Brier scores ✅
+- Maintain running averages ✅
+
+### Simulation is for Testing, Not Production
+
+The `experiments/` directory contains simulation code for **testing the tracker**, not as part of the system itself.
+
+One-way dependency:
+```
+experiments/ → core/   (experiments USE core)
+core/ ↛ experiments/   (core doesn't know about experiments)
+```
+
+## Key Concepts
+
+### 1. Discrete Time (Ticks)
+
+Time advances in discrete ticks. Events happen at specific ticks.
+
+```python
+world = World(tick=0, state=..., log=...)
+world = tick_world(world)  # Advances to tick 1
+```
+
+### 2. Events
+
+Events are immutable records of things that happened:
+
+```python
+Event(
+    tick=0,
+    source=agent_id,
+    target=agent_id,
+    event_type="prediction",
+    payload={"probability": 0.8, "horizon": 10},
+    duration=0
+)
+```
+
+### 3. Predictions & Resolutions
+
+Predictions resolve at their horizon:
+
+```python
+# At tick 0: Register prediction
+world = register_prediction(world, agent_id=1, prob=0.8, horizon=10)
+
+# At tick 5: Task completes
+world = mark_task_complete(world, agent_id=1)
+
+# At tick 10: Prediction auto-resolves
+world = run_n_ticks(world, 10)
+# → Brier = (0.8 - 1.0)² = 0.04
+# → Calibration updates
+```
+
+### 4. Brier Score
+
+Measures prediction accuracy:
+
+```
+Brier = (probability - outcome)²
+
+Perfect prediction: 0.0
+Worst prediction: 1.0
+```
+
+### 5. Calibration
+
+Running average of Brier scores. Lower is better.
+
+```python
+calibration = get_calibration(world, agent_id)
+# 0.0-0.1: Excellent
+# 0.1-0.2: Good
+# 0.2-0.3: Fair
+# 0.3+: Needs improvement
+```
+
+## Testing Strategy
+
+Tests use **known outcomes**, not simulation:
+
+```python
+def test_exact_brier():
+    world = create_code_tracker()
+
+    # Known prediction: p=0.8
+    world = register_prediction(world, agent_id=1, prob=0.8, horizon=10)
+
+    # Known outcome: True
+    world = mark_task_complete(world, agent_id=1)
+
+    # Advance to resolution
+    world = run_n_ticks(world, 10)
+
+    # Verify EXACT Brier score
+    cal = get_calibration(world, agent_id=1)
+    assert cal == 0.04  # (0.8 - 1.0)² = 0.04
+```
+
+No randomness. No simulation. Just pure math on explicit outcomes.
+
+## Integration with Claude Code (MCP)
+
+Via MCP server (future):
+
+```python
+# MCP: Register prediction
+mcp.call_tool("tracker.register_prediction", {
+    "agent_id": "claude-1",
+    "probability": 0.8,
+    "horizon_ticks": 10
+})
+
+# MCP: Log completion
+mcp.call_tool("tracker.log_completion", {
+    "task_id": "fibonacci_function",
+    "success": True
+})
+
+# MCP: Query stats
+stats = mcp.call_resource("tracker://agents/claude-1")
+# → {"calibration": 0.04, "prediction_count": 1}
+```
+
+## Example: Real Usage
+
+```python
+# Session start
+world = create_code_tracker(agent_names=["claude-session-1"])
+
+# User asks Claude to implement feature
+# Claude responds: "I'll have this done in ~15 minutes, 80% confident"
+
+# Extract and register prediction
+world = register_prediction(
+    world,
+    agent_id=1,
+    probability=0.8,
+    horizon=15,  # 15 ticks (could be minutes)
+    condition="task_complete",
+    context={"task": "implement_feature_x"}
+)
+
+# Time passes... user interacts, code gets written
+world = run_n_ticks(world, 10)
+
+# Feature actually completes
+world = mark_task_complete(world, agent_id=1, task_id="feature_x")
+
+# Advance to resolution
+world = run_n_ticks(world, 5)
+
+# Check calibration
+calibration = get_calibration(world, agent_id=1)
+print(f"Claude's calibration: {calibration:.4f}")
+# → Dashboard shows: "Claude calibration: 0.04 (excellent!)"
+```
 
 ## Installation
 
 ```bash
-git clone https://github.com/eq-network/Col-Int-Lib.git
-cd Col-Int-Lib
+git clone https://github.com/yourusername/mycorrhiza.git
+cd mycorrhiza
 pip install -r requirements.txt
 ```
 
-**Requirements**: Python 3.10+, NumPy, pandas
+Requirements: Python 3.10+, JAX, NumPy
 
-## Quick Example
+## Running Tests
 
-```python
-from core.graph import GraphState
-from core.category import sequential
-import numpy as np
+```bash
+# Tests with known outcomes (preferred)
+python tests/test_tracker_known_outcomes.py
 
-# Define your state
-state = GraphState(
-    node_types=np.zeros(100),
-    node_attrs={"score": np.ones(100)},
-    adj_matrices={"network": np.zeros((100, 100))},
-    global_attrs={"round": 0}
-)
-
-# Write transform functions
-def update_scores(state):
-    new_scores = state.node_attrs["score"] * 1.1
-    return state.update_node_attrs("score", new_scores)
-
-def update_round(state):
-    return state.update_global_attr("round", state.global_attrs["round"] + 1)
-
-# Compose and run
-pipeline = sequential(update_scores, update_round)
-final_state = pipeline(state)
+# Original e2e tests (use new tracker functions)
+python tests/test_e2e_prediction_cycle.py
 ```
 
-See [Start_Here.md](Start_Here.md) for a complete tutorial.
+All tests should pass with exact Brier score verification.
 
-## Repository Structure
+## Trade-offs & Decisions
 
-```
-collective-intelligence-library/
-├── core/              # Core framework (GraphState, Transform, Property)
-├── engine/            # Domain-agnostic transformation building blocks
-│   ├── transformations/
-│   │   ├── bottom_up/    # Agent-level transformations
-│   │   └── top_down/     # System-level mechanisms
-│   └── agents/           # Agent implementation patterns
-├── execution/         # Execution strategies and analysis tools
-├── environments/      # Example: Democracy simulations (ignore for new domains)
-└── services/          # Optional: LLM integration, etc.
-```
+**Decision: No Simulation in Core**
+- ✅ Simpler, more focused, actually useful in production
+- ✅ Can't confuse simulation with reality
+- ✅ Forces tracking of real data
+- ⚠️ Simulation moved to `experiments/` for testing
 
-For your own simulation, you'll primarily work with `core/` (the graph transformation system), `engine/transformations/` (reusable transformation patterns), and `execution/` (running simulations and analyzing results). You can safely ignore `environments/democracy/` unless you're specifically interested in that example, and most of `services/` unless you need LLM integration.
+**Decision: String-based Messages (future)**
+- ✅ Matches actual Claude Code interaction
+- ✅ Can extract predictions from natural language
+- ⚠️ Parsing is heuristic, might miss predictions
+- ✅ Start simple, improve extraction over time
 
-## Core Concepts (5 Minutes)
+**Decision: Logical Time (Ticks)**
+- ✅ Ticks when something happens (message, task completion)
+- ✅ More flexible than wall-clock time
+- ✅ Easier to test
 
-### 1. GraphState
+## Extending the System
 
-GraphState is an immutable container for your simulation state. It holds per-agent data in `node_attrs`, network structure in `adj_matrices`, and system-level data in `global_attrs`:
+Open for extension, closed for modification:
 
-```python
-state = GraphState(
-    node_types=np.array([...]),                   # Node type labels
-    node_attrs={"resources": np.array([...])},    # Per-agent data
-    adj_matrices={"connections": np.array([...])}, # Network structure
-    global_attrs={"round": 0}                       # System-level data
-)
-```
-
-### 2. Transforms
-
-Transforms are pure functions that map from one GraphState to another. They read from the input state, compute new values, and return a new state without ever mutating the original:
-
-```python
-def my_transform(state: GraphState) -> GraphState:
-    # Read from state, compute new values
-    # Return new state (never mutate!)
-    return state.update_node_attrs("score", new_scores)
-```
-
-### 3. Composition
-
-Complex behaviors emerge from chaining simple transforms together. The `sequential` function composes multiple transforms into a pipeline:
-
-```python
-from core.category import sequential
-
-pipeline = sequential(
-    information_spread,
-    belief_update,
-    network_rewiring
-)
-
-final_state = pipeline(initial_state)
-```
-
-That's the entire pattern. Everything else builds on this foundation.
-
-## The Democracy Example
-
-The `environments/democracy/` code demonstrates these concepts through voting simulations, but it's not part of the core framework. It's one example of how to use the library. If you're building your own simulation, you can safely ignore the democracy code and focus on the core framework.
-
-## Philosophy
-
-This framework embraces functional purity, where transformations have no side effects. States are immutable—never modified, only transformed into new states. Complex behaviors emerge through composition of simple parts. Mathematical properties are encoded in the type system, and there's a clean separation between what transformations do mathematically and how they execute computationally.
-
-Read the [Manifesto](Manifesto.md) for the full philosophical and technical argument.
-
-## Documentation
-
-The [Start Here](Start_Here.md) guide walks you through building your first simulation. The [Manifesto](Manifesto.md) explains the conceptual foundations and design principles. You can also view the [Excalidraw Diagrams](https://excalidraw.com/#room=f4116b0ba2d8d5095d85,zSDwGDuqMZI4uxu4CTQuHg) for visual architecture overview.
+1. **More metrics**: Add to `stats.py` without touching core
+2. **Different environments**: Add new adapters in `engine/environments/`
+3. **Persistence**: Swap save/load without changing core
+4. **UI/Dashboard**: Query `stats.py`, doesn't need core changes
+5. **MCP integration**: Another effect layer, core unchanged
 
 ## Contributing
 
-This is research code that's changing rapidly. If you're interested in building your own domain simulations, improving the core framework, or adding new transformation patterns, please reach out or submit a PR.
+This is research code exploring prediction tracking for AI agents. Contributions welcome:
+
+- Improved prediction extraction from natural language
+- MCP server implementation
+- Dashboard/visualization
+- Additional metrics and analysis
 
 ## License
 
@@ -141,4 +316,4 @@ MIT
 
 ---
 
-**Remember**: The democracy code is just an example. The framework is for building **any** graph-based multi-agent simulation. Start with [Start_Here.md](Start_Here.md) and build something new.
+**Remember**: This tracks reality, not simulations. All core functions are pure. Effects at edges. World → World all the way down.

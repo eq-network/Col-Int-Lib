@@ -123,6 +123,7 @@ def tick_world(world: World) -> World:
     1. Increment the tick counter
     2. Complete any events whose time has come
     3. Apply effects of completed events to state
+    4. Check and resolve any predictions at this tick
 
     This is a pure function: World → World
     """
@@ -139,11 +140,12 @@ def tick_world(world: World) -> World:
     for event in completing_events:
         new_state = apply_event(new_state, event)
 
-    return World(
-        tick=new_tick,
-        state=new_state,
-        log=new_log
-    )
+    # Create intermediate world for prediction resolution
+    intermediate = World(tick=new_tick, state=new_state, log=new_log)
+
+    # Check and resolve predictions (imported lazily to avoid circular import)
+    from .predictions import check_and_resolve_predictions
+    return check_and_resolve_predictions(intermediate)
 
 
 def apply_event(state: GraphState, event: Event) -> GraphState:
