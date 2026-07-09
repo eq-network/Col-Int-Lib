@@ -9,25 +9,40 @@ ENDOGENOUS POLYCENTRIC GOVERNANCE AS CAUSAL EMERGENCE
 
     regime        finalR  surv     fit  mesoEI  EI%ile respond
     atomized         0.0     7  -1.519   0.000     nan   +0.00
-    monocentric    145.8   200  -1.058   0.024      97   +0.17
-    fixed_poly     143.8   200  -0.247   1.519     100   +1.00
-    endogenous     144.2   200  -0.228   1.512     100   +1.00
+    monocentric    145.8   200  -1.058   0.037       0   +0.17
+    fixed_poly     143.8   200  -0.247   0.428     100   +1.00
+    endogenous     144.2   200  -0.228   0.395      98   +1.00
 
     -> atomized collapses (tragedy); the rest survive (MAS result reproduced).
     -> endogenous: high meso-EI privilege AND high fit AND high responsiveness
        = co-maintains EI-and-fit; monocentric: low meso-EI, low fit, ~0 responsiveness
        = one calcified setpoint that ignores sub-communities.
 
+    seed CIs (mean [95% bootstrap], 12 seeds):
+    atomized     fit -1.519 [-1.535, -1.503]   surv 6.8 [5.5, 8.2]   finalR 0.0 [0.0, 0.0]
+                 per-seed mesoEI n/a (all seeds collapsed)  (per-seed mean != pooled point by construction; n_eff=0, median pct nan, 0/0 seeds pct>=95)
+    monocentric  fit -1.058 [-1.072, -1.044]   surv 200.0 [200.0, 200.0]   finalR 145.8 [143.8, 147.9]
+                 per-seed mesoEI 0.213 [0.171, 0.252]  (per-seed mean != pooled point by construction; n_eff=12, median pct 35, 0/12 seeds pct>=95)
+    fixed_poly   fit -0.247 [-0.259, -0.235]   surv 200.0 [200.0, 200.0]   finalR 143.8 [143.3, 144.4]
+                 per-seed mesoEI 0.251 [0.204, 0.305]  (per-seed mean != pooled point by construction; n_eff=12, median pct 54, 1/12 seeds pct>=95)
+    endogenous   fit -0.228 [-0.238, -0.217]   surv 200.0 [200.0, 200.0]   finalR 144.2 [143.8, 144.7]
+                 per-seed mesoEI 0.250 [0.197, 0.305]  (per-seed mean != pooled point by construction; n_eff=12, median pct 56, 2/12 seeds pct>=95)
+
 [2] HEADLINE: the endogenous-minus-monocentric FIT gap grows with heterogeneity
       het  fit_mono  fit_endo  fit_gap  EI_mono  EI_endo
-      0.0    -0.385    -0.343   +0.042    0.018    0.670
-      1.0    -0.790    -0.287   +0.504    0.018    1.405
-      2.0    -1.259    -0.301   +0.958    1.176    1.587
+      0.0    -0.385    -0.343   +0.042    0.026    0.320
+      1.0    -0.790    -0.287   +0.504    0.026    0.463
+      2.0    -1.259    -0.301   +0.958    0.040    0.669
     -> at het=0 the central quota fits fine (gap~0); the gap opens as sub-communities
        diverge — the welfare cost of uniformity (Oates), measured.
 
+    paired endo-minus-mono fit-gap (mean [95% bootstrap], 12 paired seeds):
+    het=0.0  0.042 [0.006, 0.082]  (excludes 0)
+    het=1.0  0.504 [0.483, 0.525]  (excludes 0)
+    het=2.0  0.958 [0.935, 0.983]  (excludes 0)
+
 [3] LOAD-BEARING TEST (policer ablation): endogenous with monitoring ON vs OFF
-    monitoring ON : finalR=  144.2  fit=-0.228  mesoEI=1.512
+    monitoring ON : finalR=  144.2  fit=-0.228  mesoEI=0.395
     monitoring OFF: finalR=    0.0  fit=-1.519  mesoEI=0.000
     -> removing enforcement collapses survival AND fit AND the meso-structure together:
        EI is load-bearing (it moves when the substantive mechanism is corrupted).
