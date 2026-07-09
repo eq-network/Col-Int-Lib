@@ -92,14 +92,24 @@ def make_observe(cfg: AIConfig):
 def make_fuse(cfg: AIConfig):
     """FUSE: precision-weighted averaging across the trust graph (DeGroot in
     information form — a contraction), within frame, plus damped log-linear
-    pooling of the log-weights (the hypothesis pool)."""
+    pooling of the log-weights (the hypothesis pool).
+
+    The coupling clamp ``kappa`` gates the fuse toward the identity:
+    ``W_eff = (1-kappa) I + kappa W`` (still row-stochastic). This scales the
+    effective Laplacian ``L_eff = kappa (I - W)`` and hence the spectral gap
+    ``lambda_2`` linearly, so kappa is exactly the knob that opens or closes the
+    internal/collective timescale separation (kappa=1: plain fuse; kappa->0:
+    criticality, agents keep their own belief and no collective coordinate forms)."""
     m_pool = cfg.m_pool
+    kappa = cfg.kappa
 
     def fuse(state: GraphState) -> GraphState:
         Pi = state.node_attrs[PI]
         h = state.node_attrs[HVEC]
         logw = state.node_attrs[LOGW]
         W = row_stochastic(state.adj_matrices[TRUST])            # (N,N)
+        # coupling clamp: convex mix with identity keeps W_eff row-stochastic
+        W = (1.0 - kappa) * jnp.eye(W.shape[0]) + kappa * W
 
         Pi_f = jnp.einsum('ij,jkab->ikab', W, Pi)                # fuse within frame
         h_f = jnp.einsum('ij,jka->ika', W, h)

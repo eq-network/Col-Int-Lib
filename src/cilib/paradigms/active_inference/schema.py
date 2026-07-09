@@ -68,6 +68,13 @@ class AIConfig:
     use_gate   : enable the Student-t reliability gate on observation channels.
     track_logweights : enable prequential scoring + log-weight dynamics (the
                  represented-rivals layer). Off => beliefs only (K is inert).
+    kappa      : fuse-gate / coupling clamp in (0, 1]. The fuse mixes each agent's
+                 own belief with its trust-weighted neighbours' via
+                 ``W_eff = (1-kappa) I + kappa W``, so the effective coupling
+                 Laplacian is ``L_eff = kappa (I - W)`` and its spectral gap scales
+                 linearly, ``lambda_2(L_eff) = kappa * lambda_2(I - W)``.
+                 kappa = 1.0 recovers the plain DeGroot fuse; kappa -> 0 opens the
+                 internal/collective timescale gap toward criticality (the clamp).
     """
     H: jax.Array
     Pi0: jax.Array
@@ -82,6 +89,7 @@ class AIConfig:
     nu: float = 4.0
     use_gate: bool = False
     track_logweights: bool = False
+    kappa: float = 1.0
 
     @property
     def d(self) -> int:
