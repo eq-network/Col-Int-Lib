@@ -7,11 +7,16 @@ gets richer as catalogs fill in.
 ## Setup
 
 ```bash
-git clone https://github.com/eq-network/Col-Int-Lib.git
-cd "Collective Intelligence Library"
+git clone https://github.com/eq-network/Collective-Intelligence-Library.git
+cd Collective-Intelligence-Library
 pip install -e .          # editable install; `import cilib` now resolves
 python -m pytest -q       # confirm green before you start
 ```
+
+This is research code evolving in the open, and the codebase will make more sense
+after a short conversation than after a long read. If you're interested in the ideas,
+the direction, or collaborating — please reach out:
+[Jonas Hallgren](https://github.com/spiralling) · Uppsala University · `jonas@eq-network.org`
 
 ## The contribution path
 
@@ -36,3 +41,11 @@ python -m pytest -q       # confirm green before you start
 
 See [CLAUDE.md](CLAUDE.md) for the full conventions and [ARCHITECTURE.md](ARCHITECTURE.md)
 for how the pieces relate.
+
+## Documentation cadence
+
+Per-change notes go in `docs/changelogs/` as dated Markdown on the day the change
+lands; architectural changes get compiled into a typeset monthly roll-up (see
+`docs/changelogs/2026-03-30_core-primitives.pdf` for the template). If something in
+the docs contradicts the code, **the code is the source of truth** and the docs are
+drifting — opening an issue or pinging Jonas is the fastest fix.

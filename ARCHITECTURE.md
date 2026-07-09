@@ -60,16 +60,17 @@ plain dict in its `__init__.py` (open it, see every entry).
 | **mechanisms** | `Config -> Transform` (typed, family-disjoint writes) | a composed institution (market / network / democracy) | `cilib/mechanisms` |
 | **environments** | `(**cfg) -> EnvSpec` | a runnable substrate | `cilib/environments` |
 
-Above the catalogs sit two more roles:
+Above the catalogs sits the research ring, `cilib.lab` (no stability promise — see
+`lab/__init__.py`):
 
-- **paradigms** (`cilib/paradigms`) — *composers*: a self-contained model (agents +
+- **paradigms** (`cilib.lab.paradigms`) — *composers*: a self-contained model (agents +
   world + dynamics) wiring catalog entries into a pipeline. A new study = a new
-  folder following the 6-part contract in `paradigms/README.md`. Examples:
+  folder following the 6-part contract in `lab/paradigms/README.md`. Examples:
   `active_inference`, `polycentric`.
-- **analysis** (`cilib/analysis`) & **metrics** (`cilib/metrics`) — *measurement*:
-  analysis is `GraphState`-free offline math (effective information, causal
-  emergence); metrics are in-loop composable readouts. The simulation tier produces
-  trajectories; this tier measures them.
+- **analysis** (`cilib.lab.analysis`) — `GraphState`-free offline research math
+  (effective information, causal emergence, bootstrap CIs). Contrast **metrics**
+  (`cilib/metrics`, ring 1): in-loop composable readouts usable by any pipeline.
+  The simulation tier produces trajectories; this tier measures them.
 
 An **experiment** (`experiments/`) selects catalog entries, compiles a pipeline, and
 sweeps it over seeds/dials.
@@ -81,13 +82,13 @@ Strictly one-directional — nothing below depends on anything above it:
 ```
 core/                       framework + contracts (depends on nothing in the library)
   ▲
-agents/ transformations/ mechanisms/ environments/      catalogs   (import core)
+agents/ transformations/ mechanisms/ environments/ metrics/   catalogs (import core)
   ▲
-paradigms/                  composers  (import core + catalogs)
+lab/paradigms/              composers  (import core + catalogs)
   ▲
-experiments/                studies    (import paradigms, analysis, metrics)
+experiments/                studies    (import lab.paradigms, lab.analysis, metrics)
 
-analysis/                   measurement — imports NOTHING from the library (offline)
+lab/analysis/               measurement — imports NOTHING from the library (offline)
 ```
 
 ## Where things live
@@ -95,8 +96,10 @@ analysis/                   measurement — imports NOTHING from the library (of
 ```
 src/cilib/        the installable library (import root: `cilib`)
   core/           GraphState, Transform, @transform, compile_pipeline, scan, schedule, protocols
-  agents/  transformations/  mechanisms/  environments/     the catalogs
-  paradigms/      active_inference, polycentric  (6-part contract)
-  analysis/  metrics/   measurement
+  agents/  transformations/  mechanisms/  environments/  metrics/    the catalogs
+  lab/            research payload (no stability promise)
+    paradigms/    active_inference, polycentric  (6-part contract)
+    analysis/     effective information, causal emergence, bootstrap
+examples/         start here — three-script ladder (imports core + catalogs only)
 experiments/      in-repo studies (import cilib; not part of the package)
 ```

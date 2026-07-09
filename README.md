@@ -1,57 +1,34 @@
-# Collective Intelligence Library: Process-Centric Multi-Agent Simulation
+# Collective Intelligence Library
 
-A JAX-native functional framework for building multi-agent simulations using graph transformations and category theory. Built for mechanism-design experiments in computational social science and multi-agent AI.
-
-> ### Status: research code, actively evolving
->
-> This is a research codebase. It is **not** a polished library — we are figuring things out as we go, and specifics will change.
->
-> **What's stable (the load-bearing ideas):**
-> - Functional programming foundation: state is immutable, transforms are pure functions.
-> - The core trio: a typed state, transforms over that state, and sequential / compositional assembly of those transforms into mechanisms.
-> - Online / `lax.scan`-style execution: simulations are a scan of transforms across ticks, not an imperative update loop.
->
-> **What will change (details in flux):**
-> - Concrete data types (`GraphState` field names, pytree layout, what's dynamic vs static).
-> - The compiler / pipeline machinery (right now a read/write-set DAG, but this is an implementation choice, not a commitment).
-> - Naming, module boundaries, APIs of individual transforms.
->
-> Documentation lags the code. Some things that live in Jonas' head aren't written down anywhere yet. **If you're interested in the ideas, the direction, or collaborating — please reach out.** The codebase will make more sense after a short conversation than after a long read.
->
-> Contact: [Jonas Hallgren](https://github.com/spiralling) · Uppsala University · `jonas@eq-network.org`
-
-> **State of the library (synced 2026-04-16)**
-> - **Stable enough to use:** `core/` (GraphState, typed transforms, `sequential/parallel/conditional`, pipeline compiler, schedule primitive, `lax.scan` environment); `metrics/` families; `vmap`-over-seeds execution.
-> - **Flagship experiment:** `experiments/basin_stability/` — PDD / PRD / PLD under adversarial pressure on a proposal-selection resource game. See [`AGENT_ARCHITECTURE.md`](experiments/basin_stability/AGENT_ARCHITECTURE.md).
-> - **Reference examples (may lag the core API):** `experiments/fishing_commons/`, `experiments/governed_harvest/`.
-> - **Next milestones:** full 4,200-condition vmap sweep on GPU; thesis figure set.
-
-## What Is This?
-
-The Collective Intelligence Library treats simulations as **pure transformations on graph states** rather than object-oriented state mutations. This makes complex multi-agent systems easier to reason about, compose, and verify.
-
-**Core Principle**: `GraphState → Transform → GraphState → Transform → ...`
-
-That's it. Everything else is optimization or convenience.
+CI Lib is a JAX-native framework for multi-agent simulation: state is an immutable
+pytree (`GraphState`), every step is a pure function (`Transform = GraphState ->
+GraphState`), and a simulation compiles to a single `lax.scan` that `vmap`s over
+thousands of seeds. You compose transforms instead of writing an update loop, and you
+get typed dependency ordering, JIT, and batched sweeps for free.
 
 **Why you might care (by field):**
-- *Computational social science:* swap aggregation rules, delegation topologies, or election schedules without rewriting the game. Mechanisms compose.
-- *Multi-agent AI:* agents are pure functions over a shared `GraphState`; runs are batched via `jax.vmap`, making 1000-seed adversarial sweeps feasible on a single GPU.
-- *Mechanism design:* every pipeline carries declared read/write sets, so institutional dependencies are a typed DAG, not a tangle of update hooks.
 
-## Getting Started
+- *Computational social science:* swap aggregation rules, delegation topologies, or
+  election schedules without rewriting the game. Mechanisms compose.
+- *Multi-agent AI:* agents are pure functions over a shared `GraphState`; runs are
+  batched via `jax.vmap`, making 1000-seed adversarial sweeps feasible on one GPU.
+- *Mechanism design:* every pipeline carries declared read/write sets, so
+  institutional dependencies are a typed DAG, not a tangle of update hooks.
 
-If you're new to the framework, start with the [Manifesto](docs/Manifesto.md) for the conceptual foundations. For the architectural reasoning behind the current primitives — with TikZ diagrams — see [`docs/changelogs/2026-03-30_core-primitives.pdf`](docs/changelogs/2026-03-30_core-primitives.pdf).
-
-**For the architecture and how to extend it:** [ARCHITECTURE.md](ARCHITECTURE.md) (the pattern map — read this first), [EXTENDING.md](EXTENDING.md) (how to add a building block), [CLAUDE.md](CLAUDE.md) (conventions for coding agents), and [CONTRIBUTING.md](CONTRIBUTING.md).
-
-The flagship worked example lives in `experiments/basin_stability/`. The core framework is in `core/` and `metrics/`, and you can use it to build simulations for any domain: epidemics, markets, opinion dynamics, or anything else involving agents and networks.
+> ### Status: launch-ready core, evolving catalogs, active research payload
+>
+> `cilib.core` is the stable promise — build on it without expecting churn. The
+> catalogs (`cilib.{agents,transformations,mechanisms,environments,metrics}`) work
+> today and grow by addition, but are thin and their shapes may still move.
+> `cilib.lab` is the maintainer's research code behind in-progress papers — real,
+> tested, not held to library stability. The table in
+> [Where this fits](#where-this-fits) says which promise applies where.
 
 ## Installation
 
 ```bash
-git clone https://github.com/eq-network/Col-Int-Lib.git
-cd "Collective Intelligence Library"
+git clone https://github.com/eq-network/Collective-Intelligence-Library.git
+cd Collective-Intelligence-Library
 pip install -e .            # editable install; `import cilib` now resolves
 # with JAX CUDA 12:
 pip install -e ".[cuda]"
@@ -61,151 +38,134 @@ The library installs as `cilib` (distribution name `collective-intelligence-libr
 
 **Requirements**: Python 3.10+, JAX 0.4.20+, NumPy, matplotlib. GPU optional (via `jax[cuda12]`).
 
-## Quick Example
+## Quick example
 
 ```python
+import jax
 import jax.numpy as jnp
-from cilib.core import GraphState, sequential
+from cilib.core import GraphState, transform, run_scan
 
-# Define your state (JAX arrays, not numpy — JIT/vmap compatibility)
 state = GraphState(
-    node_types=jnp.zeros(100, dtype=jnp.int32),
-    node_attrs={"score": jnp.ones(100)},
-    adj_matrices={"network": jnp.zeros((100, 100))},
-    global_attrs={"round": jnp.array(0)},   # dynamic (traced)
+    node_types=jnp.zeros(5, dtype=jnp.int32),
+    node_attrs={"score": jnp.ones(5)},      # per-agent, evolving
+    adj_matrices={},
+    global_attrs={},
 )
 
-# Transforms are pure GraphState -> GraphState
-def update_scores(state):
-    return state.update_node_attrs("score", state.node_attrs["score"] * 1.1)
+@transform(reads=["score"], writes=["score"])   # declared effects -> the compiler can order it
+def decay(state):
+    return state.update_node_attrs("score", state.node_attrs["score"] * 0.9)
 
-def update_round(state):
-    return state.update_global_attr("round", state.global_attrs["round"] + 1)
-
-# Compose and run
-pipeline = sequential(update_scores, update_round)
-final_state = pipeline(state)
+final, trace = run_scan(lambda s, t, key: decay(s), state, n_steps=50,
+                        key=jax.random.PRNGKey(0),
+                        trace_fn=lambda s: s.node_attrs["score"].mean())
+print(final.node_attrs["score"])                # decayed toward 0, in one lax.scan
 ```
 
-For a full experiment (with metrics, vmap-over-seeds, and adversarial sweeps), see [`experiments/basin_stability/run_experiment.py`](experiments/basin_stability/run_experiment.py).
+**Start with [`examples/`](examples/)** — three short scripts, one idea each, on one
+growing toy domain:
 
-### Run the flagship experiment
+1. [`01_first_transform.py`](examples/01_first_transform.py) — `GraphState` + one
+   `@transform` + `run_scan`; watch a commons collapse.
+2. [`02_typed_pipeline.py`](examples/02_typed_pipeline.py) — four transforms;
+   `compile_pipeline` derives the execution order and finds the parallel batch itself.
+3. [`03_vmap_seeds_and_learning.py`](examples/03_vmap_seeds_and_learning.py) —
+   per-agent Q-learning, 200 seeds as one `vmap(lax.scan)` program.
 
-```bash
-# Quick smoke test (10 seeds per condition, sequential)
-python -m experiments.basin_stability.run_experiment --quick
+## Where this fits
 
-# Full sweep (100 seeds × 3 mechanisms × 2 tracking modes × 7 adversarial fractions, vmap-batched)
-python -m experiments.basin_stability.run_experiment --n_seeds 100 --vmap --plot
-```
+| Ring | Package | Promise | The PR test |
+|---|---|---|---|
+| 0 — engine | `cilib.core` | **Stable.** `GraphState`, `Transform`, `@transform`, `compile_pipeline`, `run_scan`/`run_scan_batch` won't break under you without a changelog entry. | Would we review a PR here like a library API change? Yes. |
+| 1 — catalogs | `cilib.{agents, transformations, mechanisms, environments, metrics}` | **Works, evolving.** Entries are real and tested; catalogs are thin and grow by addition, so names/signatures near the edges may still shift. | Would we merge a stranger's new catalog entry? Yes — that's the point, see [EXTENDING.md](EXTENDING.md). |
+| 2 — lab | `cilib.lab.{paradigms, analysis}` | **Research payload, no stability promise.** The code behind specific papers (polycentric causal emergence, active inference). Read before depending on it. | Would we maintain a stranger's PR here like a library? No — we'd point them at `experiments/`. |
 
-## Repository Structure
+## Repository structure
 
 ```
 collective-intelligence-library/
-├── src/cilib/            # The installable library (import root: `cilib`)
-│   ├── core/                # GraphState, @transform, compile_pipeline, scan, schedule, protocols
-│   ├── agents/              # catalog: decision rules (Policy / PureAgent)
-│   ├── transformations/     # catalog: atomic state->state steps
-│   ├── mechanisms/          # catalog: composed institutions (market / network / democracy)
-│   ├── environments/        # catalog: runnable substrates (EnvSpec)
-│   ├── paradigms/           # composers: self-contained models (active_inference, polycentric)
-│   └── analysis/  metrics/  # measurement: offline math + in-loop readouts
-├── experiments/          # in-repo studies (import cilib; not part of the package)
-│   ├── basin_stability/     # PDD/PRD/PLD vs adversarial pressure
-│   ├── polycentric_emergence/  # causal-emergence study (newest)
-│   └── governed_harvest/    # earlier harvest-extraction prototype
-├── ARCHITECTURE.md  EXTENDING.md  CONTRIBUTING.md  CLAUDE.md   # the docs below
-└── docs/                 # Manifesto (the "why") + dated changelogs
+├── src/cilib/
+│   ├── core/                 Ring 0 — the engine (GraphState, @transform,
+│   │                         compile_pipeline, scan/vmap runners, schedule, protocols)
+│   ├── agents/  transformations/  mechanisms/
+│   │   environments/  metrics/                  Ring 1 — catalogs (plain REGISTRY dicts)
+│   └── lab/
+│       ├── paradigms/        Ring 2 — composed research models (active_inference, polycentric)
+│       └── analysis/         Ring 2 — offline research math (effective information,
+│                             causal emergence, bootstrap CIs)
+├── examples/                 START HERE — imports ring 0/1 only, never cilib.lab
+├── experiments/              research studies (config/run/figures/README contract);
+│   │                         may import cilib.lab
+│   ├── basin_stability/         PDD/PRD/PLD democracy under adversarial pressure
+│   ├── polycentric_emergence/   governance as causal emergence (paper study)
+│   └── governed_harvest/        earlier harvest prototype
+├── docs/                     Manifesto (the "why") + dated changelogs
+└── ARCHITECTURE.md  EXTENDING.md  CONTRIBUTING.md  CLAUDE.md  LICENSE
 ```
 
 Each catalog's contents are a plain `REGISTRY` dict in its `__init__.py`. To build a
 simulation you select catalog entries, compile a pipeline, and sweep it — see
 [EXTENDING.md](EXTENDING.md) for the recipes and `experiments/_template/` for the shape.
 
-## Core Concepts (5 Minutes)
+## The functional imperatives
 
-### 1. GraphState
+These aren't style preferences — the scan/vmap execution model breaks *silently*, not
+loudly, if you violate them.
 
-GraphState is an immutable container for your simulation state. It holds per-agent data in `node_attrs`, network structure in `adj_matrices`, and system-level data in `global_attrs`:
+1. **State lives in `GraphState`, never in objects.** Agents are pure factories; stash
+   evolving data on `self` and it won't be there when JAX retraces you.
+2. **Transforms are pure — `GraphState -> GraphState`, no mutation.** Composition
+   (`sequential`, `compile_pipeline`) assumes it; an in-place mutation breaks under
+   `jit`/`vmap` without raising.
+3. **Static config is closed over by factories, never stored in `global_attrs`.**
+   Swept or per-step data in `global_attrs` forces silent recompiles or freezes a value
+   at trace time.
+4. **No data-dependent Python `if` inside a transform — use `jnp.where`/`lax.cond`.**
+   A traced value can't drive Python control flow; the branch taken at trace time gets
+   locked in.
+5. **Declare `.reads`/`.writes` via `@transform`.** `compile_pipeline` derives execution
+   order from these sets; an undeclared transform is invisible to the compiler.
 
-```python
-state = GraphState(
-    node_types=np.array([...]),                   # Node type labels
-    node_attrs={"resources": np.array([...])},    # Per-agent data
-    adj_matrices={"connections": np.array([...])}, # Network structure
-    global_attrs={"round": 0}                       # System-level data
-)
-```
+The full convention list (for anyone extending the engine itself) is in
+[CLAUDE.md](CLAUDE.md).
 
-### 2. Transforms
+## Research built on this engine
 
-Transforms are pure functions that map from one GraphState to another. They read from the input state, compute new values, and return a new state without ever mutating the original:
+The stable/evolving/research split above isn't a way of saying the research is
+second-class — it's the opposite: these studies are the reason the engine has the
+shape it has.
 
-```python
-def my_transform(state: GraphState) -> GraphState:
-    # Read from state, compute new values
-    # Return new state (never mutate!)
-    return state.update_node_attrs("score", new_scores)
-```
+- **Polycentric causal emergence** (`cilib.lab.paradigms.polycentric`,
+  [`experiments/polycentric_emergence/`](experiments/polycentric_emergence/)) —
+  governance regimes re-described as causal emergence over a common-pool resource
+  game, measured with effective information against honest surrogate nulls.
+- **Basin stability of democratic mechanisms**
+  ([`experiments/basin_stability/`](experiments/basin_stability/)) — direct,
+  representative, and liquid democracy (PDD/PRD/PLD) with Q-learning agents under
+  adversarial pressure, measured as survival probability across a 500-seed sweep.
 
-### 3. Composition
-
-Complex behaviors emerge from chaining simple transforms together. The `sequential` function composes multiple transforms into a pipeline:
-
-```python
-from cilib.core import sequential
-
-pipeline = sequential(
-    information_spread,
-    belief_update,
-    network_rewiring
-)
-
-final_state = pipeline(initial_state)
-```
-
-That's the entire pattern. Everything else builds on this foundation.
-
-## The Basin Stability Example
-
-The current flagship application lives in `experiments/basin_stability/`. It tests three democratic mechanisms — PDD (direct), PRD (representative), PLD (liquid) — under adversarial pressure on a common-pool resource game, and compares *predictive* vs *non-predictive* trust dynamics. [`AGENT_ARCHITECTURE.md`](experiments/basin_stability/AGENT_ARCHITECTURE.md) documents exactly what each agent does and why.
-
-This is an example, not part of the framework. If you're building a simulation in a different domain, use it as a template for what a full experiment looks like (state factory, pure policy functions, decorated transforms, a composed step pipeline, a vmap sweep, CSV export).
-
-## Philosophy
-
-This framework embraces functional purity, where transformations have no side effects. States are immutable — never modified, only transformed into new states. Complex behaviors emerge through composition of simple parts. Mathematical properties are encoded in the type system, and there's a clean separation between what transformations do mathematically and how they execute computationally.
-
-Read the [Manifesto](docs/Manifesto.md) for the full philosophical and technical argument.
+These live outside the stable catalogs because they move at the pace of a thesis
+chapter, not a library release. If you want to see the engine under real research
+load, read one after `examples/`.
 
 ## Documentation
 
-| Doc | Purpose | Last synced |
-|---|---|---|
-| [docs/Manifesto.md](docs/Manifesto.md) | The "why": process-centric thinking + category theory framing | 2026-02 |
-| [docs/changelogs/](docs/changelogs/) | Per-change notes (Markdown) + typeset figures (LaTeX/PDF) | 2026-03 |
-| [Excalidraw diagrams](https://excalidraw.com/#room=f4116b0ba2d8d5095d85,zSDwGDuqMZI4uxu4CTQuHg) | Live visual architecture overview | continuous |
-
-### Documentation & update cadence
-
-To keep this readable from outside without pretending it's a finished product, we follow a light rhythm:
-
-- **Per-change notes go in `docs/changelogs/` as Markdown** on the day the change lands. These are short, technical, and dated (`YYYY-MM-DD_what-changed.md`).
-- **Monthly roll-up as LaTeX/PDF.** At the end of each month, the Markdown changelogs covering architectural primitives get compiled into a single typeset document with TikZ diagrams — see [`docs/changelogs/2026-03-30_core-primitives.pdf`](docs/changelogs/2026-03-30_core-primitives.pdf) as the template. Read this if you want the *why* behind the current primitives.
-- **README "State of the library" box refreshed at each monthly roll-up.** So if the date at the top of this README is more than ~6 weeks old, assume the box is out of sync with the code and skim recent `docs/changelogs/` instead.
-- **Versioning:** `0.x` pre-thesis. `0.1` = basin_stability sweep end-to-end. `1.0` will mean the thesis figures are reproducible from a tagged commit. We are at the `0.1` milestone.
-
-If something in the docs contradicts the code, **the code is the source of truth** and the docs are drifting. Opening an issue or pinging Jonas is the fastest fix.
+| Doc | Purpose |
+|---|---|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | The pattern map — read this first |
+| [EXTENDING.md](EXTENDING.md) | How to add a building block (agent, transform, mechanism, …) |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution path, house style, doc cadence, contact |
+| [CLAUDE.md](CLAUDE.md) | Working conventions (for humans and coding agents) |
+| [docs/Manifesto.md](docs/Manifesto.md) | The "why": process-centric thinking + category theory framing |
+| [docs/changelogs/](docs/changelogs/) | Dated engineering notes + typeset roll-ups |
 
 ## Contributing
 
-This is research code that's changing rapidly. If you're interested in building your own domain simulations, improving the core framework, or adding new transformation patterns, please reach out or submit a PR.
+New building blocks are one file plus one `REGISTRY` line — see
+[CONTRIBUTING.md](CONTRIBUTING.md). Interested in the ideas or collaborating?
+Reach out: [Jonas Hallgren](https://github.com/spiralling) · Uppsala University ·
+`jonas@eq-network.org`.
 
 ## License
 
-MIT
-
----
-
-**Remember**: `basin_stability` is one worked example. The framework is for building **any** graph-based multi-agent simulation where you want typed, composable mechanisms.
+[MIT](LICENSE)

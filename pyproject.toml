@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "collective-intelligence-library"
 version = "0.1.0"
 description = "Composable mechanism simulation via functional graph transforms"
+license = {text = "MIT"}
 requires-python = ">=3.10"
 dependencies = [
     "jax>=0.4.20",

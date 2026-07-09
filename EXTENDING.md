@@ -63,11 +63,16 @@ from .my_env import build_my_env
 REGISTRY = { ..., "my_env": build_my_env }
 ```
 
-## Add a paradigm → `src/cilib/paradigms/<name>/`
+## Add a paradigm → `src/cilib/lab/paradigms/<name>/`
 
-A self-contained model. Follow the 6-part contract in `paradigms/README.md` (schema /
-primitives / transforms / agents / environments / tests). `polycentric/` is the
-worked example. Compose its round with `compile_pipeline`, run via `run_scan_batch`.
+A self-contained model tied to one study/paper — this is the `cilib.lab` ring, not a
+catalog. The razor: a *mechanism* is swappable into any pipeline by any future study;
+a *paradigm* wires many pieces together to make one paper's argument. Follow the
+6-part contract in `lab/paradigms/README.md` (schema / primitives / transforms /
+agents / environments / tests). `polycentric/` is the worked example. Compose its
+round with `compile_pipeline`, run via `run_scan_batch`. (Paper-specific offline math
+goes in `src/cilib/lab/analysis/`; general-purpose in-loop readouts in
+`src/cilib/metrics/`.)
 
 ## Add an experiment → `experiments/<name>/`
 

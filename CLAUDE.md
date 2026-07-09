@@ -23,12 +23,18 @@ python -m pytest -q     # the safety net — keep it green
 | an atomic `state->state` step | `src/cilib/transformations/` | `transformations/README.md` |
 | a composed institution (market/network/democracy) | `src/cilib/mechanisms/` | `mechanisms/README.md` |
 | a runnable substrate | `src/cilib/environments/` | `environments/README.md` |
-| a full model (agents+world+dynamics) | `src/cilib/paradigms/<name>/` | `paradigms/README.md` (6-part contract) |
-| an offline metric on trajectories | `src/cilib/analysis/` or `src/cilib/metrics/` | — |
+| a general-purpose in-loop readout | `src/cilib/metrics/` | — |
+| a full model tied to one study/paper | `src/cilib/lab/paradigms/<name>/` | `lab/paradigms/README.md` (6-part contract) |
+| paper-specific offline math (EI, causal emergence, …) | `src/cilib/lab/analysis/` | — |
 | a study / sweep | `experiments/<name>/` | `experiments/_template/` |
 
 Each catalog is a plain `REGISTRY = {...}` dict in its `__init__.py`. Adding an entry
 = write the factory + add one dict line + a behavioral test. See [EXTENDING.md](EXTENDING.md).
+
+**The lab razor:** would we merge and maintain a stranger's PR to this file the way
+we'd maintain a library API? No → it goes under `cilib.lab` (research payload, no
+stability promise), not a catalog. A *mechanism* is swappable into any pipeline by any
+future study; a *paradigm* wires many pieces together to make one paper's argument.
 
 ## Load-bearing conventions
 
@@ -50,7 +56,7 @@ Each catalog is a plain `REGISTRY = {...}` dict in its `__init__.py`. Adding an 
 
 ## Verifying a change
 
-- Behavior-preserving refactor → `python -m pytest -q` must stay green (currently 65).
+- Behavior-preserving refactor → `python -m pytest -q` must stay green (currently 82).
 - A change to a paradigm's composition → assert the new pipeline is numerically
   identical to the old one for a fixed seed before deleting the old path.
 - A new catalog entry → a behavioral test asserting the *mechanism* (direction /
