@@ -110,8 +110,7 @@ collective-intelligence-library/
 │   ├── mechanisms/          # catalog: composed institutions (market / network / democracy)
 │   ├── environments/        # catalog: runnable substrates (EnvSpec)
 │   ├── paradigms/           # composers: self-contained models (active_inference, polycentric)
-│   ├── analysis/  metrics/  # measurement: offline math + in-loop readouts
-│   └── execution/           # experiment-runner infra
+│   └── analysis/  metrics/  # measurement: offline math + in-loop readouts
 ├── experiments/          # in-repo studies (import cilib; not part of the package)
 │   ├── basin_stability/     # PDD/PRD/PLD vs adversarial pressure
 │   ├── polycentric_emergence/  # causal-emergence study (newest)

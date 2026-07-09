@@ -98,6 +98,5 @@ src/cilib/        the installable library (import root: `cilib`)
   agents/  transformations/  mechanisms/  environments/     the catalogs
   paradigms/      active_inference, polycentric  (6-part contract)
   analysis/  metrics/   measurement
-  execution/      experiment-runner infra
 experiments/      in-repo studies (import cilib; not part of the package)
 ```

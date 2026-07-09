@@ -9,12 +9,11 @@ no Python state may instead implement `PureAgent` — `round_fn() -> (state, t, 
 so it runs inside `core.scan.run_scan` and `vmap`s over seeds.
 
 **Entries:** `random`, `tit_for_tat`, `linear`. (Also present: `rl_components`,
-`profiles`, `democracy/` — legacy/effectful, not yet cataloged.)
+`profiles` — support modules, not yet cataloged.)
 
 **Add one:**
 1. Write a `Policy` (or `PureAgent`) in a module here.
 2. Add one line to `REGISTRY` in `__init__.py`: `"my_agent": MyPolicy`.
 3. Add a behavioral test asserting what it does.
 
-The legacy OOP `core.agents.Agent.act()` is *not* the pattern — prefer pure
-`Policy`/`PureAgent`. Effectful agents (LLM/HTTP) live on the eager `core.time` tier.
+Effectful agents (LLM/HTTP) live on the eager `core.time` tier.
