@@ -11,7 +11,7 @@ Currently:
   TPM estimator, partitions (nested/agglomerative/greedy-modularity), null test, Shapley-EI,
   and the synthetic reference network (validation fixture).
 """
-from . import causal_emergence  # noqa: F401  (submodule, used as engine.analysis.causal_emergence)
+from . import causal_emergence  # noqa: F401  (submodule, used as cilib.lab.analysis.causal_emergence)
 from .effective_information import (
     stationary,
     partition_to_S,

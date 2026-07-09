@@ -16,8 +16,8 @@ import numpy as np
 import jax.numpy as jnp
 import jax.random as jr
 
-from cilib.paradigms import polycentric as P
-from cilib.analysis import causal_emergence as ce
+from cilib.lab.paradigms import polycentric as P
+from cilib.lab.analysis import causal_emergence as ce
 
 KEY = jr.PRNGKey(0)
 T = 150

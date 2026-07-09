@@ -13,8 +13,8 @@ Run: python -m pytest engine/analysis/tests/test_causal_emergence.py -q
 import numpy as np
 import jax.numpy as jnp
 
-from cilib.analysis import causal_emergence as ce
-from cilib.analysis import effective_information as ei_jax
+from cilib.lab.analysis import causal_emergence as ce
+from cilib.lab.analysis import effective_information as ei_jax
 
 
 # =============================================================================

@@ -9,7 +9,7 @@ with similar-condition peers, so the institutional partition is instantiated by 
 endogenous (+ a monitoring=False ablation, + a capture dial) — share one dynamics, so outcome
 differences are attributable to governance.
 
-Measured offline (see ``engine.analysis``): effective information across coarse-grainings (does
+Measured offline (see ``cilib.lab.analysis``): effective information across coarse-grainings (does
 an institutional meso-scale emerge and is it causally privileged?) AND fit (does the setpoint
 match heterogeneous local conditions?). The headline is the (EI, Fit) gap vs heterogeneity.
 """

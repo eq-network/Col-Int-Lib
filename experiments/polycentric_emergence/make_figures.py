@@ -16,8 +16,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from cilib.paradigms import polycentric as P
-from cilib.analysis import causal_emergence as ce
+from cilib.lab.paradigms import polycentric as P
+from cilib.lab.analysis import causal_emergence as ce
 from experiments.polycentric_emergence.run_experiment import (
     run_regime, final_R, survival, mean_fit, behavioral_meso_ei, responsiveness,
     structural_shapley, discretize, T, N_SEEDS,

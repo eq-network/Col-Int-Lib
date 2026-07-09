@@ -15,9 +15,9 @@ run on the scan tier (``core.scan.run_scan``) and ``vmap`` over seeds.
 Quickstart::
 
     from cilib.core.scan import run_scan
-    from cilib.paradigms.active_inference.environments import kuhn_cycle
-    from cilib.paradigms.active_inference.agents import StructureLearnerAgent
-    from cilib.paradigms.active_inference.schema import q_of_m
+    from cilib.lab.paradigms.active_inference.environments import kuhn_cycle
+    from cilib.lab.paradigms.active_inference.agents import StructureLearnerAgent
+    from cilib.lab.paradigms.active_inference.schema import q_of_m
     import jax
 
     cfg, state, T = kuhn_cycle()

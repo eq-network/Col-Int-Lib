@@ -8,12 +8,12 @@ Run: python -m pytest engine/paradigms/active_inference/tests/test_primitives.py
 """
 import jax.numpy as jnp
 
-from cilib.paradigms.active_inference.primitives import (
+from cilib.lab.paradigms.active_inference.primitives import (
     info_mean, info_cov, log_evidence, fisher_deposit, fisher_deposit_weighted,
     predictive_logpdf, predictive_logpdf_perchannel, savage_dickey,
     schur_marginalize, zero_edge_prior, softmax, entropy,
 )
-from cilib.paradigms.active_inference.primitives.gaussian_info import LOG_2PI
+from cilib.lab.paradigms.active_inference.primitives.gaussian_info import LOG_2PI
 
 
 def test_log_evidence_known_value():

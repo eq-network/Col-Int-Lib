@@ -19,9 +19,9 @@ try:                                  # Windows consoles default to cp1252; forc
 except Exception:
     pass
 
-from cilib.paradigms import polycentric as P
-from cilib.analysis import causal_emergence as ce
-from cilib.analysis import bootstrap as bs
+from cilib.lab.paradigms import polycentric as P
+from cilib.lab.analysis import causal_emergence as ce
+from cilib.lab.analysis import bootstrap as bs
 
 KEY = jr.PRNGKey(0)
 T = 200

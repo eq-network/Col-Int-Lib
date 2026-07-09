@@ -11,10 +11,10 @@ Tests for the cold-read-driven analysis extensions:
 import numpy as np
 import pytest
 
-from cilib.analysis import causal_emergence as ce
-from cilib.analysis import validate_estimator as ve
-from cilib.analysis import bootstrap as bs
-from cilib.analysis.effective_information import ei_bits as jax_ei_bits
+from cilib.lab.analysis import causal_emergence as ce
+from cilib.lab.analysis import validate_estimator as ve
+from cilib.lab.analysis import bootstrap as bs
+from cilib.lab.analysis.effective_information import ei_bits as jax_ei_bits
 
 
 # ----------------------------------------------------------------------------- stationary-weighted EI

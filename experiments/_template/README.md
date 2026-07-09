@@ -15,5 +15,5 @@ python -m experiments._template.figures     # -> fit_vs_heterogeneity.png
 ```
 
 This template sweeps **heterogeneity** for the polycentric paradigm and plots **mean fit**.
-To make your own study: swap the paradigm (`cilib.paradigms.*`), the metrics in `run.py`, and
+To make your own study: swap the paradigm (`cilib.lab.paradigms.*`), the metrics in `run.py`, and
 the sweep axis in `config.py`. For a full worked study see `experiments/polycentric_emergence/`.

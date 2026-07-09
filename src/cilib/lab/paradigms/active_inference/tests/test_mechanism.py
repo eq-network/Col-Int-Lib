@@ -20,12 +20,12 @@ import jax.numpy as jnp
 from jax import random
 
 from cilib.core.scan import run_scan, run_scan_batch
-from cilib.paradigms.active_inference.agents import (
+from cilib.lab.paradigms.active_inference.agents import (
     ActiveInferenceAgent, StructureLearnerAgent,
 )
-from cilib.paradigms.active_inference.schema import q_of_m, PI, LOGW
-from cilib.paradigms.active_inference.primitives import info_cov, entropy
-from cilib.paradigms.active_inference.environments import (
+from cilib.lab.paradigms.active_inference.schema import q_of_m, PI, LOGW
+from cilib.lab.paradigms.active_inference.primitives import info_cov, entropy
+from cilib.lab.paradigms.active_inference.environments import (
     two_camp_contraction, represented_rivals, kuhn_cycle, conflict_single_agent,
 )
 

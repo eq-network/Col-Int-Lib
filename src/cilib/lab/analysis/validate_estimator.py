@@ -14,7 +14,7 @@ the theory predicts. This module builds null and structured trajectories at the 
 sizes, runs the same offline pipeline (``coupling_transition_from_trajectories`` → agglomerative
 hierarchy → ``ei_curve`` / ``null_compare``), and reports whether the estimator passes the gate.
 
-Run as a script for a quick report:  ``python -m cilib.analysis.validate_estimator``
+Run as a script for a quick report:  ``python -m cilib.lab.analysis.validate_estimator``
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from cilib.analysis import causal_emergence as ce
+from cilib.lab.analysis import causal_emergence as ce
 
 
 # ----------------------------------------------------------------------------- null / structured data

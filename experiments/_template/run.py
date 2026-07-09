@@ -2,7 +2,7 @@
 
 The canonical experiment shape:  build config -> for each sweep point run the paradigm over
 seeds (``run_batch`` vmaps the seeds into one compiled program) -> reduce each rollout batch to
-scalar metrics -> save. Swap the paradigm (``cilib.paradigms.*``), the metrics, and the sweep
+scalar metrics -> save. Swap the paradigm (``cilib.lab.paradigms.*``), the metrics, and the sweep
 axis for your own study.
 
     python -m experiments._template.run
@@ -15,7 +15,7 @@ import os
 import numpy as np
 import jax.random as jr
 
-from cilib.paradigms import polycentric as P
+from cilib.lab.paradigms import polycentric as P
 
 from .config import ExperimentConfig
 

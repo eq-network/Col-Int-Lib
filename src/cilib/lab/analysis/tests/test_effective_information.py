@@ -13,7 +13,7 @@ Run: python -m pytest engine/analysis/tests/test_effective_information.py -q
 import jax.numpy as jnp
 import numpy as np
 
-from cilib.analysis.effective_information import (
+from cilib.lab.analysis.effective_information import (
     stationary, partition_to_S, macro_tpm, coarse_grain,
     ei_bits, det_bits, deg_bits, leak,
 )

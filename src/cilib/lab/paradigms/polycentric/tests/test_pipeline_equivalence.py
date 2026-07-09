@@ -13,9 +13,9 @@ import jax.random as jr
 from cilib.core.category import sequential
 from cilib.core.pipeline import compile_pipeline
 from cilib.core.scan import run_scan
-from cilib.paradigms import polycentric as P
-from cilib.paradigms.polycentric.transforms import round_factories
-from cilib.paradigms.polycentric.schema import RNG
+from cilib.lab.paradigms import polycentric as P
+from cilib.lab.paradigms.polycentric.transforms import round_factories
+from cilib.lab.paradigms.polycentric.schema import RNG
 
 
 def _round(pipeline):
