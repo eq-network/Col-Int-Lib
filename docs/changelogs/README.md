@@ -1,6 +1,8 @@
 # Changelogs
 
-Paper trail of architectural changes to Mycorrhiza. Each file is named `{date}_{what-changed}.md`.
+Paper trail of architectural changes to the Collective Intelligence Library. Each file is
+named `{date}_{what-changed}.md`. Historical note: entries predating 2026-06 describe the
+pre-`src/` layout (`core/…`, `engine/…`) as it existed on their date.
 
 ## 2026-03-30: Core Primitives (Plan 1 Phases A-C)
 

@@ -41,7 +41,7 @@ That's it. Everything else is optimization or convenience.
 
 ## Getting Started
 
-If you're new to the framework, start with the [Start Here Guide](Start_Here.md) for a hands-on walkthrough, and the [Manifesto](Manifesto.md) for the conceptual foundations. For the architectural reasoning behind the current primitives — with TikZ diagrams — see [`changelogs/2026-03-30_core-primitives.pdf`](changelogs/2026-03-30_core-primitives.pdf).
+If you're new to the framework, start with the [Manifesto](docs/Manifesto.md) for the conceptual foundations. For the architectural reasoning behind the current primitives — with TikZ diagrams — see [`docs/changelogs/2026-03-30_core-primitives.pdf`](docs/changelogs/2026-03-30_core-primitives.pdf).
 
 **For the architecture and how to extend it:** [ARCHITECTURE.md](ARCHITECTURE.md) (the pattern map — read this first), [EXTENDING.md](EXTENDING.md) (how to add a building block), [CLAUDE.md](CLAUDE.md) (conventions for coding agents), and [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -87,7 +87,7 @@ pipeline = sequential(update_scores, update_round)
 final_state = pipeline(state)
 ```
 
-For a full experiment (with metrics, vmap-over-seeds, and adversarial sweeps), see [`experiments/basin_stability/run_experiment.py`](experiments/basin_stability/run_experiment.py). The [Start Here Guide](Start_Here.md) walks through the same pattern pedagogically.
+For a full experiment (with metrics, vmap-over-seeds, and adversarial sweeps), see [`experiments/basin_stability/run_experiment.py`](experiments/basin_stability/run_experiment.py).
 
 ### Run the flagship experiment
 
@@ -116,8 +116,7 @@ collective-intelligence-library/
 │   ├── polycentric_emergence/  # causal-emergence study (newest)
 │   └── governed_harvest/    # earlier harvest-extraction prototype
 ├── ARCHITECTURE.md  EXTENDING.md  CONTRIBUTING.md  CLAUDE.md   # the docs below
-├── plans/  changelogs/   # design docs + per-change notes
-└── Manifesto.md          # the "why" — long-form argument
+└── docs/                 # Manifesto (the "why") + dated changelogs
 ```
 
 Each catalog's contents are a plain `REGISTRY` dict in its `__init__.py`. To build a
@@ -178,27 +177,23 @@ This is an example, not part of the framework. If you're building a simulation i
 
 This framework embraces functional purity, where transformations have no side effects. States are immutable — never modified, only transformed into new states. Complex behaviors emerge through composition of simple parts. Mathematical properties are encoded in the type system, and there's a clean separation between what transformations do mathematically and how they execute computationally.
 
-Read the [Manifesto](Manifesto.md) for the full philosophical and technical argument.
+Read the [Manifesto](docs/Manifesto.md) for the full philosophical and technical argument.
 
 ## Documentation
 
 | Doc | Purpose | Last synced |
 |---|---|---|
-| [Start_Here.md](Start_Here.md) | Hands-on walkthrough for a first simulation | *pending refresh* |
-| [Manifesto.md](Manifesto.md) | The "why": process-centric thinking + category theory framing | 2026-02 |
-| [plans/](plans/) | Design docs + experiment plans (ARCHITECTURE, NEXT_STEPS, basin_stability) | 2026-04 |
-| [changelogs/](changelogs/) | Per-change notes (Markdown) + typeset figures (LaTeX/PDF) | 2026-03 |
-| [experiments/basin_stability/AGENT_ARCHITECTURE.md](experiments/basin_stability/AGENT_ARCHITECTURE.md) | Agent-level spec for the flagship experiment | 2026-04-16 |
+| [docs/Manifesto.md](docs/Manifesto.md) | The "why": process-centric thinking + category theory framing | 2026-02 |
+| [docs/changelogs/](docs/changelogs/) | Per-change notes (Markdown) + typeset figures (LaTeX/PDF) | 2026-03 |
 | [Excalidraw diagrams](https://excalidraw.com/#room=f4116b0ba2d8d5095d85,zSDwGDuqMZI4uxu4CTQuHg) | Live visual architecture overview | continuous |
 
 ### Documentation & update cadence
 
 To keep this readable from outside without pretending it's a finished product, we follow a light rhythm:
 
-- **Per-change notes go in `changelogs/` as Markdown** on the day the change lands. These are short, technical, and dated (`YYYY-MM-DD_what-changed.md`).
-- **Monthly roll-up as LaTeX/PDF.** At the end of each month, the Markdown changelogs covering architectural primitives get compiled into a single typeset document with TikZ diagrams — see [`changelogs/2026-03-30_core-primitives.pdf`](changelogs/2026-03-30_core-primitives.pdf) as the template. Read this if you want the *why* behind the current primitives.
-- **README "State of the library" box refreshed at each monthly roll-up.** So if the date at the top of this README is more than ~6 weeks old, assume the box is out of sync with the code and skim recent `changelogs/` instead.
-- **Plans in `plans/` are living documents.** They describe intent and may run ahead of what's implemented — treat them as direction-setting, not as specification.
+- **Per-change notes go in `docs/changelogs/` as Markdown** on the day the change lands. These are short, technical, and dated (`YYYY-MM-DD_what-changed.md`).
+- **Monthly roll-up as LaTeX/PDF.** At the end of each month, the Markdown changelogs covering architectural primitives get compiled into a single typeset document with TikZ diagrams — see [`docs/changelogs/2026-03-30_core-primitives.pdf`](docs/changelogs/2026-03-30_core-primitives.pdf) as the template. Read this if you want the *why* behind the current primitives.
+- **README "State of the library" box refreshed at each monthly roll-up.** So if the date at the top of this README is more than ~6 weeks old, assume the box is out of sync with the code and skim recent `docs/changelogs/` instead.
 - **Versioning:** `0.x` pre-thesis. `0.1` = basin_stability sweep end-to-end. `1.0` will mean the thesis figures are reproducible from a tagged commit. We are at the `0.1` milestone.
 
 If something in the docs contradicts the code, **the code is the source of truth** and the docs are drifting. Opening an issue or pinging Jonas is the fastest fix.
@@ -213,4 +208,4 @@ MIT
 
 ---
 
-**Remember**: `basin_stability` is one worked example. The framework is for building **any** graph-based multi-agent simulation where you want typed, composable mechanisms. Start with [Start_Here.md](Start_Here.md) and build something new.
+**Remember**: `basin_stability` is one worked example. The framework is for building **any** graph-based multi-agent simulation where you want typed, composable mechanisms.

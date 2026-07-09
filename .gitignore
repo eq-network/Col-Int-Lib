@@ -1,18 +1,28 @@
-Kanban\.env
-config.json
-**/credentials/*
+# secrets / local config
 .env
-text
-.json
+**/credentials/*
+config.json
+.claude/
+
+# python
 __pycache__
+*.pyc
+*.egg-info/
+
+# run artifacts
 results/
 experiment_outputs/
 simulation_results/
-.pyc
-.claude/
-
-
-# build / run artifacts
-*.egg-info/
 experiments/**/results.json
 experiments/_template/*.png
+
+# latex build artifacts
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.toc
+*.bbl
+*.blg
