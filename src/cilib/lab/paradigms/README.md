@@ -7,9 +7,14 @@ The point: a new paper/study becomes a *folder here*, reusing the engine
 instead of a bespoke repo. The first paradigm, `active_inference/`, is the worked
 example — read it alongside this contract.
 
+Paradigms live behind the `cilib.lab` fence (see `lab/__init__.py`): they are
+research payload tied to specific papers, not catalog entries. The test: a
+*mechanism* is swappable into any pipeline by any future study; a *paradigm*
+wires many pieces together to make one paper's argument.
+
 ## The contract (6 parts)
 
-A paradigm `engine/paradigms/<name>/` provides:
+A paradigm `src/cilib/lab/paradigms/<name>/` provides:
 
 1. **`schema.py`** — the state layout. Which `node_attrs` each agent carries
    (leading axis = N agents), which `adj_matrices` (e.g. `trust`, with a positive
@@ -31,14 +36,13 @@ A paradigm `engine/paradigms/<name>/` provides:
 
 4. **`agents.py`** — `PureAgent` factories. A pure agent does **not** hold state
    (that lives in `GraphState`); it exposes `round_fn() -> (state, t, key) -> state`,
-   the pure round it implements. (Contrast the effectful `engine.agents.llm_agent`,
-   which brackets an HTTP call and must run on the eager `core.time` tier.)
+   the pure round it implements. (Contrast a genuinely effectful agent — one that
+   brackets an LLM/HTTP call — which must run on the eager `core.time` tier.)
 
 5. **`environments/`** — `create_initial_state(**params)` scenario factories
    (implements `core.environment.Environment`). Build the initial `GraphState` and
    the matching `*Config`. Swept dials are plain function params (→ `vmap` axes on
-   the fast path, or `execution.config.ExperimentConfig.parameter_sweeps` for the
-   eager/heterogeneous path).
+   the fast path).
 
 6. **`tests/`** — behavioral acceptance signatures. Assert the *mechanism*
    (qualitative phenomena), not bit-exact numbers, run through `run_scan`.
@@ -46,7 +50,7 @@ A paradigm `engine/paradigms/<name>/` provides:
 ## Running a paradigm (the fast path)
 
 ```python
-from core.scan import run_scan, run_scan_batch
+from cilib.core.scan import run_scan, run_scan_batch
 cfg, state, T = <env_preset>(...)
 round_fn = <Agent>(cfg).round_fn()
 
